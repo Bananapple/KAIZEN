@@ -52,8 +52,9 @@ const ContactModal = ({ isOpen, onClose }) => {
     e.preventDefault();
 
     try {
-      // Using Formspree to send emails
-      const response = await fetch('https://formspree.io/f/xanyglnb', {
+      const FORMSPREE_ID = 'xpqrogna';
+
+      const response = await fetch(`https://formspree.io/f/${FORMSPREE_ID}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -73,6 +74,8 @@ const ContactModal = ({ isOpen, onClose }) => {
         setFormData({ name: '', company: '', email: '', message: '' });
         onClose();
       } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Form submission failed:', errorData);
         alert('There was an error sending your message. Please try again or email us directly at nicholas@kaizengrp.co');
       }
     } catch (error) {
