@@ -424,8 +424,8 @@ const ServicesSection = () => {
     {
       title: 'Corporate Finance',
       services: [
-        { name: 'M&A Readiness', description: 'Exit strategy and deal execution.\n\n' },
-        { name: 'Post-Merger Integration', description: 'Unifying systems and cultures for value realization.\n\n' },
+        { name: 'M&A', description: 'Buy-side and Sell-side deal execution.\n\n' },
+        { name: 'Readiness', description: 'Strategic advisory and value creation planning.\n\n' },
         { name: 'Capital markets', description: 'Fundraising and investor relations.' }
       ]
     }
