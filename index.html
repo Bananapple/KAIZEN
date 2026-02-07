@@ -1,38 +1,509 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kaizen | Strategic Advisory for Technology-Led Organisations</title>
+  <meta name="description" content="Strategic Advisory for Technology-Led Organisations. Expert advice on corporate finance, leveraging technology, and process design.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://kaizengrp.co/">
 
-    <!-- Primary Meta Tags -->
-    <title>Kaizen - Strategic Advisory for Technology-Led Organisations</title>
-    <meta name="title" content="Kaizen - Strategic Advisory for Technology-Led Organisations" />
-    <meta name="description" content="Hands-on strategic advisory for technology-led organisations." />
-    <meta name="keywords" content="strategic advisory, technology consulting, M&A readiness, AI integration, technology due diligence, process design, corporate finance, digital transformation" />
-    <meta name="author" content="Kaizen" />
+  <!-- Favicon -->
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://kaizengrp.co/" />
-    <meta property="og:title" content="Kaizen - Strategic Advisory for Technology-Led Organisations" />
-    <meta property="og:description" content="Hands on strategic advisory for technology-led organisations." />
-    <meta property="og:image" content="https://kaizengrp.co/og-image.jpg" />
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Kaizen | Strategic Advisory for Technology-Led Organisations">
+  <meta property="og:description" content="Expert advice on corporate finance, leveraging technology, and process design.">
+  <meta property="og:url" content="https://kaizengrp.co/">
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://kaizengrp.co/" />
-    <meta property="twitter:title" content="Kaizen - Strategic Advisory for Technology-Led Organisations" />
-    <meta property="twitter:description" content="Hands on strategic advisory for technology-led organisations." />
-    <meta property="twitter:image" content="https://kaizengrp.co/og-image.jpg" />
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Kaizen | Strategic Advisory for Technology-Led Organisations">
+  <meta name="twitter:description" content="Expert advice on corporate finance, leveraging technology, and process design.">
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+      background: #000;
+      color: #f5f5f5;
+      overflow-x: hidden;
+    }
+
+    /* ========== LOADING SCREEN ========== */
+
+    #loader {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.6s ease, visibility 0.6s ease;
+    }
+
+    #loader.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .pixel-canvas {
+      display: flex;
+      gap: 4px;
+    }
+
+    .pixel-letter {
+      display: grid;
+      gap: 2px;
+    }
+
+    .pixel-block {
+      width: 8px;
+      height: 8px;
+      background: transparent;
+      transition: background 0.08s ease;
+    }
+
+    .pixel-block.lit {
+      background: #f5f5f5;
+    }
+
+    /* ========== MAIN CONTENT ========== */
+
+    #main {
+      opacity: 0;
+      transition: opacity 0.8s ease 0.2s;
+      min-height: 100vh;
+    }
+
+    #main.visible {
+      opacity: 1;
+    }
+
+    .page-wrapper {
+      max-width: 560px;
+      margin: 0 auto;
+      padding: 40px 40px 60px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 48px;
+    }
+
+    /* Animated headline */
+    .headline {
+      font-size: 2.8rem;
+      font-weight: 700;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      text-align: center;
+      min-height: 7rem;
+    }
+
+    .headline-static {
+      display: block;
+    }
+
+    .headline-rotating {
+      display: block;
+      position: relative;
+      height: 1.2em;
+    }
+
+    .rotating-word {
+      display: inline-block;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      position: absolute;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      color: #c8c8c8;
+    }
+
+    .rotating-word.active {
+      opacity: 1;
+    }
+
+    /* ========== CONTACT FORM ========== */
+
+    .right-col {
+      width: 100%;
+    }
+
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      padding: 14px 16px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: #f5f5f5;
+      outline: none;
+      transition: border-color 0.25s ease;
+      width: 100%;
+    }
+
+    .form-group input::placeholder,
+    .form-group textarea::placeholder {
+      color: #444;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border-color: rgba(255, 255, 255, 0.45);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 160px;
+    }
+
+    .send-btn {
+      background: #f5f5f5;
+      color: #000;
+      border: none;
+      border-radius: 6px;
+      padding: 14px 32px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.25s ease, transform 0.15s ease;
+      letter-spacing: -0.01em;
+      align-self: flex-start;
+    }
+
+    .send-btn:hover {
+      background: #fff;
+      transform: translateY(-1px);
+    }
+
+    .send-btn:active {
+      transform: translateY(0);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .form-status {
+      font-size: 0.85rem;
+      color: #888;
+      min-height: 1.2em;
+    }
+
+    .form-status.success {
+      color: #6fcf97;
+    }
+
+    .form-status.error {
+      color: #eb5757;
+    }
+
+    /* ========== RESPONSIVE ========== */
+
+    @media (max-width: 600px) {
+      .page-wrapper {
+        padding: 40px 24px 48px;
+        gap: 40px;
+      }
+
+      .headline {
+        font-size: 2rem;
+        min-height: auto;
+      }
+
+      .send-btn {
+        width: 100%;
+        text-align: center;
+      }
+
+      .pixel-block {
+        width: 6px;
+        height: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Loading screen -->
+  <div id="loader">
+    <div class="pixel-canvas" id="pixelCanvas"></div>
+  </div>
+
+  <!-- Main content -->
+  <div id="main">
+    <div class="page-wrapper">
+
+      <h1 class="headline">
+        <span class="headline-static">Expert advice on</span>
+        <span class="headline-rotating" id="rotatingText">
+          <span class="rotating-word active">corporate finance</span>
+          <span class="rotating-word">leveraging technology</span>
+          <span class="rotating-word">process design</span>
+        </span>
+      </h1>
+
+      <div class="right-col">
+        <form class="contact-form" id="contactForm">
+          <div class="form-group">
+            <label for="email">@ address</label>
+            <input type="email" id="email" name="email" placeholder="you@company.com" required autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" placeholder="Tell us about your project..." required></textarea>
+          </div>
+          <button type="submit" class="send-btn" id="sendBtn">Send</button>
+          <p class="form-status" id="formStatus"></p>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ============================
+    // Pixel font definitions (5x7 grid per letter)
+    // ============================
+    const PIXEL_FONT = {
+      K: [
+        [1,0,0,0,1],
+        [1,0,0,1,0],
+        [1,0,1,0,0],
+        [1,1,0,0,0],
+        [1,0,1,0,0],
+        [1,0,0,1,0],
+        [1,0,0,0,1],
+      ],
+      A: [
+        [0,1,1,1,0],
+        [1,0,0,0,1],
+        [1,0,0,0,1],
+        [1,1,1,1,1],
+        [1,0,0,0,1],
+        [1,0,0,0,1],
+        [1,0,0,0,1],
+      ],
+      I: [
+        [1,1,1,1,1],
+        [0,0,1,0,0],
+        [0,0,1,0,0],
+        [0,0,1,0,0],
+        [0,0,1,0,0],
+        [0,0,1,0,0],
+        [1,1,1,1,1],
+      ],
+      Z: [
+        [1,1,1,1,1],
+        [0,0,0,0,1],
+        [0,0,0,1,0],
+        [0,0,1,0,0],
+        [0,1,0,0,0],
+        [1,0,0,0,0],
+        [1,1,1,1,1],
+      ],
+      E: [
+        [1,1,1,1,1],
+        [1,0,0,0,0],
+        [1,0,0,0,0],
+        [1,1,1,1,0],
+        [1,0,0,0,0],
+        [1,0,0,0,0],
+        [1,1,1,1,1],
+      ],
+      N: [
+        [1,0,0,0,1],
+        [1,1,0,0,1],
+        [1,0,1,0,1],
+        [1,0,0,1,1],
+        [1,0,0,0,1],
+        [1,0,0,0,1],
+        [1,0,0,0,1],
+      ],
+    };
+
+    // ============================
+    // Build pixel grid
+    // ============================
+    const canvas = document.getElementById('pixelCanvas');
+    const letters = 'KAIZEN'.split('');
+    const allBlocks = [];
+
+    letters.forEach((ch, li) => {
+      const grid = PIXEL_FONT[ch];
+      const letterEl = document.createElement('div');
+      letterEl.className = 'pixel-letter';
+      letterEl.style.gridTemplateColumns = `repeat(${grid[0].length}, 8px)`;
+
+      grid.forEach((row, ri) => {
+        row.forEach((on, ci) => {
+          const block = document.createElement('div');
+          block.className = 'pixel-block';
+          letterEl.appendChild(block);
+          if (on) {
+            allBlocks.push({ el: block, letter: li, row: ri, col: ci });
+          }
+        });
+      });
+
+      canvas.appendChild(letterEl);
+    });
+
+    // Adjust block size for mobile
+    function adjustBlockSize() {
+      const w = window.innerWidth;
+      const size = w <= 480 ? '6px' : '8px';
+      document.querySelectorAll('.pixel-letter').forEach(l => {
+        l.style.gridTemplateColumns = l.style.gridTemplateColumns.replace(/\d+px/g, size);
+      });
+    }
+    adjustBlockSize();
+
+    // ============================
+    // Cascading Tetris-like reveal: bottom-up per column, left-to-right across letters
+    // ============================
+
+    // Sort: by letter index, then column, then row descending (bottom first)
+    allBlocks.sort((a, b) => {
+      if (a.letter !== b.letter) return a.letter - b.letter;
+      if (a.col !== b.col) return a.col - b.col;
+      return b.row - a.row; // bottom to top
+    });
+
+    // Assign cascading delays
+    let delay = 0;
+    const BASE = 35;
+
+    for (let i = 0; i < allBlocks.length; i++) {
+      const curr = allBlocks[i];
+      const prev = i > 0 ? allBlocks[i - 1] : null;
+
+      if (!prev) {
+        delay = 0;
+      } else if (curr.letter !== prev.letter) {
+        delay += BASE * 2.5;
+      } else if (curr.col !== prev.col) {
+        delay += BASE * 1.2;
+      } else {
+        delay += BASE * 0.5;
+      }
+
+      curr.delay = delay;
+    }
+
+    // Animate
+    const startTime = performance.now();
+    const totalAnimDuration = delay + 200;
+
+    allBlocks.forEach(b => {
+      setTimeout(() => b.el.classList.add('lit'), b.delay);
+    });
+
+    // Transition to main page
+    setTimeout(() => {
+      document.getElementById('loader').classList.add('hidden');
+      document.getElementById('main').classList.add('visible');
+    }, totalAnimDuration + 600);
+
+    // ============================
+    // Rotating headline
+    // ============================
+    const words = document.querySelectorAll('.rotating-word');
+    let currentWord = 0;
+
+    setInterval(() => {
+      words[currentWord].classList.remove('active');
+      currentWord = (currentWord + 1) % words.length;
+      words[currentWord].classList.add('active');
+    }, 3000);
+
+    // ============================
+    // Contact form
+    // ============================
+    const form = document.getElementById('contactForm');
+    const sendBtn = document.getElementById('sendBtn');
+    const formStatus = document.getElementById('formStatus');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value.trim();
+      const message = document.getElementById('message').value.trim();
+
+      if (!email || !message) return;
+
+      sendBtn.disabled = true;
+      sendBtn.textContent = 'Sending...';
+      formStatus.textContent = '';
+      formStatus.className = 'form-status';
+
+      try {
+        const res = await fetch('https://formsubmit.co/ajax/nicholas@kaizengrp.co', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ email, message }),
+        });
+
+        if (res.ok) {
+          formStatus.textContent = 'Message sent. We\'ll be in touch.';
+          formStatus.className = 'form-status success';
+          form.reset();
+        } else {
+          throw new Error('Failed');
+        }
+      } catch {
+        formStatus.textContent = 'Something went wrong. Please email nicholas@kaizengrp.co directly.';
+        formStatus.className = 'form-status error';
+      } finally {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send';
+      }
+    });
+  </script>
+</body>
 </html>
