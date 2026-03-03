@@ -90,37 +90,6 @@
       animation: pixel-flash 0.28s ease-out forwards;
     }
 
-    /* ========== MAIN CONTENT ========== */
-
-    #main {
-      opacity: 0;
-      transition: opacity 0.8s ease 0.2s;
-      min-height: 100vh;
-    }
-
-    #main.visible {
-      opacity: 1;
-    }
-
-    .page-wrapper {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .brand-name {
-      font-size: 3.5rem;
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      color: #f5f5f5;
-    }
-
-    @media (max-width: 600px) {
-      .brand-name {
-        font-size: 2.5rem;
-      }
-    }
   </style>
 </head>
 <body>
@@ -128,13 +97,6 @@
   <!-- Loading screen -->
   <div id="loader">
     <div class="pixel-canvas" id="pixelCanvas"></div>
-  </div>
-
-  <!-- Main content -->
-  <div id="main">
-    <div class="page-wrapper">
-      <h1 class="brand-name">Kaizen</h1>
-    </div>
   </div>
 
   <script>
@@ -298,11 +260,12 @@
     // ============================
     // Assign delays & fire animation
     // ============================
-    const PIXEL_STEP   = 13;   // ms between consecutive pixels in a stroke
-    const STROKE_PAUSE = 30;   // extra ms when lifting pen between strokes
-    const LETTER_PAUSE = 80;   // extra ms when moving to next letter
+    const START_DELAY  = 500;  // ms before first pixel fires (ensures blank screen first)
+    const PIXEL_STEP   = 20;   // ms between consecutive pixels in a stroke (50% slower)
+    const STROKE_PAUSE = 45;   // extra ms when lifting pen between strokes
+    const LETTER_PAUSE = 120;  // extra ms when moving to next letter
 
-    let delay = 0;
+    let delay = START_DELAY;
     allPixels.forEach((p, i) => {
       if (i > 0) {
         const prev = allPixels[i - 1];
@@ -316,13 +279,7 @@
       }
       setTimeout(() => p.el.classList.add('lit'), delay);
     });
-
-    // Fade out loader and reveal main content
-    const totalAnimDuration = delay + 500;
-    setTimeout(() => {
-      document.getElementById('loader').classList.add('hidden');
-      document.getElementById('main').classList.add('visible');
-    }, totalAnimDuration);
+    // Animation finishes — stay as pixel art, no transition away.
   </script>
 </body>
 </html>
