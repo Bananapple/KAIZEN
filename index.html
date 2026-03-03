@@ -261,9 +261,9 @@
     // Assign delays & fire animation
     // ============================
     const START_DELAY  = 500;  // ms before first pixel fires (ensures blank screen first)
-    const PIXEL_STEP   = 20;   // ms between consecutive pixels in a stroke (50% slower)
-    const STROKE_PAUSE = 45;   // extra ms when lifting pen between strokes
-    const LETTER_PAUSE = 120;  // extra ms when moving to next letter
+    const PIXEL_STEP   = 30;   // ms between consecutive pixels in a stroke
+    const STROKE_PAUSE = 68;   // extra ms when lifting pen between strokes
+    const LETTER_PAUSE = 180;  // extra ms when moving to next letter
 
     let delay = START_DELAY;
     allPixels.forEach((p, i) => {
