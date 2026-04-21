@@ -1,285 +1,926 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kaizen | Strategic Advisory for Technology-Led Organisations</title>
-  <meta name="description" content="Strategic Advisory for Technology-Led Organisations. Expert advice on corporate finance, leveraging technology, and process design.">
-  <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://kaizengrp.co/">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kaizen — AI automation, built into your business</title>
+<meta name="description" content="A strategic and hands-on partner for AI automation. We audit how your business runs, design practical automation strategy, and build the systems that increase revenue and expand capacity — without adding headcount.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://kaizengrp.co/">
 
-  <!-- Favicon -->
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<!-- Favicon -->
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 
-  <!-- Open Graph -->
-  <meta property="og:type" content="website">
-  <meta property="og:title" content="Kaizen | Strategic Advisory for Technology-Led Organisations">
-  <meta property="og:description" content="Expert advice on corporate finance, leveraging technology, and process design.">
-  <meta property="og:url" content="https://kaizengrp.co/">
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Kaizen — AI automation, built into your business">
+<meta property="og:description" content="A strategic and hands-on partner for AI automation. We audit how your business runs, design practical automation strategy, and build the systems that increase revenue and expand capacity.">
+<meta property="og:url" content="https://kaizengrp.co/">
 
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="Kaizen | Strategic Advisory for Technology-Led Organisations">
-  <meta name="twitter:description" content="Expert advice on corporate finance, leveraging technology, and process design.">
+<!-- Twitter -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kaizen — AI automation, built into your business">
+<meta name="twitter:description" content="A strategic and hands-on partner for AI automation. We audit how your business runs, design practical automation strategy, and build the systems that increase revenue and expand capacity.">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ===== TWEAKABLE DEFAULTS ===== */
+  :root {
+    --ink: #0A0A0A;
+    --paper: #F4F1EC;
+    --paper-2: #ECE7DF;
+    --muted: #6B655C;
+    --line: rgba(10,10,10,0.12);
+    --line-soft: rgba(10,10,10,0.06);
+    --accent: #D9531E;
+    --accent-ink: #0A0A0A;
+    --serif: 'Instrument Serif', 'Times New Roman', serif;
+    --sans: 'Inter', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --dither-opacity: 0.18;
+  }
 
-    html {
-      font-size: 16px;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--paper); color: var(--ink); }
+  body {
+    font-family: var(--sans);
+    font-weight: 400;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
 
-    body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
-      background: #000;
-      color: #f5f5f5;
-      overflow-x: hidden;
-    }
+  a { color: inherit; text-decoration: none; }
 
-    /* ========== LOADING SCREEN ========== */
+  /* ===== DITHER BACKGROUND ===== */
+  .dither {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 0;
+    opacity: var(--dither-opacity);
+    mix-blend-mode: multiply;
+  }
 
-    #loader {
-      position: fixed;
-      inset: 0;
-      z-index: 1000;
-      background: #000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.6s ease, visibility 0.6s ease;
-    }
+  /* ===== LAYOUT ===== */
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 40px;
+  }
 
-    #loader.hidden {
-      opacity: 0;
-      visibility: hidden;
-    }
+  /* ===== NAV ===== */
+  nav.top {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: color-mix(in oklab, var(--paper) 72%, transparent);
+    border-bottom: 1px solid var(--line-soft);
+  }
+  nav.top .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.02em;
+  }
+  .logo {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-family: var(--mono);
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.04em;
+  }
+  .logo-mark {
+    display: inline-block;
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 1px;
+    transform: translateY(1px);
+  }
+  .logo-meta {
+    color: var(--muted);
+    font-size: 11px;
+  }
+  .nav-links {
+    display: flex;
+    gap: 28px;
+    color: var(--muted);
+  }
+  .nav-links a {
+    transition: color .2s ease;
+  }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    border-radius: 2px;
+    transition: all .2s ease;
+  }
+  .nav-cta:hover { background: var(--ink); color: var(--paper); }
+  .nav-cta .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
 
-    .pixel-canvas {
-      display: flex;
-      gap: 3px;
-    }
+  /* ===== HERO ===== */
+  section.hero {
+    position: relative;
+    padding: 120px 0 140px;
+    border-bottom: 1px solid var(--line);
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    background: currentColor;
+  }
+  h1.display {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(54px, 8.5vw, 124px);
+    line-height: 0.95;
+    letter-spacing: -0.015em;
+    margin-top: 32px;
+    max-width: 14ch;
+  }
+  h1.display em {
+    font-style: italic;
+    color: var(--muted);
+  }
+  .hero-lead {
+    margin-top: 40px;
+    max-width: 58ch;
+    font-size: 19px;
+    line-height: 1.55;
+    color: #2a2a2a;
+  }
+  .hero-row {
+    margin-top: 48px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
 
-    .pixel-letter {
-      display: grid;
-      gap: 1px;
-    }
+  /* ===== BUTTONS ===== */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 22px;
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.02em;
+    border-radius: 2px;
+    transition: all .25s cubic-bezier(.2,.7,.2,1);
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+  .btn-primary {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .btn-primary:hover { background: var(--accent); }
+  .btn-primary .arrow { transition: transform .25s ease; }
+  .btn-primary:hover .arrow { transform: translateX(4px); }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink);
+  }
+  .btn-ghost:hover { border-color: var(--ink); }
 
-    .pixel-block {
-      width: 5px;
-      height: 5px;
-      background: transparent;
-    }
+  /* ===== META STRIP ===== */
+  .meta-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+    margin-top: 88px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .meta-item .k {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .meta-item .v {
+    font-family: var(--serif);
+    font-size: 28px;
+    margin-top: 8px;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+  }
 
-    @keyframes pixel-flash {
-      0%   { background: #fff;    box-shadow: 0 0 6px 2px rgba(255,255,255,0.85); }
-      50%  { background: #f5f5f5; box-shadow: 0 0 3px 1px rgba(255,255,255,0.3); }
-      100% { background: #e8e8e8; box-shadow: none; }
-    }
+  /* ===== SECTION HEADERS ===== */
+  .section-head {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 40px;
+    align-items: baseline;
+    padding-bottom: 56px;
+  }
+  .section-head .lead h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(36px, 4.5vw, 64px);
+    line-height: 1.02;
+    letter-spacing: -0.01em;
+    max-width: 18ch;
+  }
+  .section-head .lead h2 em {
+    font-style: italic;
+    color: var(--muted);
+  }
+  .section-index {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
 
-    .pixel-block.lit {
-      background: #e8e8e8;
-      animation: pixel-flash 0.28s ease-out forwards;
-    }
+  section.block {
+    padding: 120px 0;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+  }
 
-  </style>
+  /* ===== PROBLEM GRID ===== */
+  .problem-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--line);
+    border-left: 1px solid var(--line);
+  }
+  .problem-card {
+    padding: 36px 32px 44px;
+    border-right: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    background: transparent;
+    transition: background .3s ease;
+    position: relative;
+    min-height: 220px;
+  }
+  .problem-card:hover { background: var(--paper-2); }
+  .problem-card .num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+  }
+  .problem-card h3 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 26px;
+    line-height: 1.15;
+    margin-top: 18px;
+    max-width: 22ch;
+    letter-spacing: -0.005em;
+  }
+  .problem-card p {
+    margin-top: 14px;
+    color: var(--muted);
+    font-size: 14.5px;
+    line-height: 1.55;
+    max-width: 32ch;
+  }
+
+  /* ===== APPROACH ===== */
+  .approach {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+  }
+  .step {
+    background: var(--paper);
+    padding: 40px 36px 48px;
+    position: relative;
+  }
+  .step .step-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 40px;
+    border-bottom: 1px dashed var(--line);
+    margin-bottom: 28px;
+  }
+  .step .step-label .idx {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+  .step .step-label .tick {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  .step h3 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 34px;
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+  }
+  .step h3 em { font-style: italic; color: var(--muted); }
+  .step p {
+    margin-top: 18px;
+    color: var(--muted);
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+  .step ul {
+    list-style: none;
+    margin-top: 22px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+  }
+  .step ul li {
+    padding: 10px 0;
+    border-top: 1px solid var(--line-soft);
+    display: flex;
+    gap: 12px;
+  }
+  .step ul li::before {
+    content: '→';
+    color: var(--accent);
+  }
+
+  /* ===== TOOLS MARQUEE ===== */
+  section.tools {
+    padding: 96px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .tools-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 48px;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .tools-head p {
+    font-family: var(--serif);
+    font-size: 28px;
+    line-height: 1.2;
+    max-width: 28ch;
+    letter-spacing: -0.005em;
+  }
+  .marquee {
+    position: relative;
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  }
+  .marquee-track {
+    display: flex;
+    gap: 64px;
+    animation: marquee 60s linear infinite;
+    width: max-content;
+    align-items: center;
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  .tool-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--serif);
+    font-size: 28px;
+    color: var(--muted);
+    letter-spacing: -0.01em;
+    flex-shrink: 0;
+    transition: color .3s ease;
+  }
+  .tool-chip:hover { color: var(--ink); }
+  .tool-chip .tool-mark {
+    height: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink);
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+  .tool-chip .tool-mark img {
+    height: 22px;
+    width: auto;
+    max-width: 80px;
+    display: block;
+    filter: grayscale(1);
+    transition: filter .3s ease;
+  }
+  .tool-chip:hover .tool-mark { opacity: 1; }
+  .tool-chip:hover .tool-mark img { filter: grayscale(0); }
+  .tool-sep {
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--line);
+    flex-shrink: 0;
+  }
+
+  /* ===== CTA ===== */
+  section.cta {
+    padding: 140px 0 160px;
+    position: relative;
+    background: var(--ink);
+    color: var(--paper);
+    overflow: hidden;
+  }
+  section.cta .dither-inv {
+    position: absolute;
+    inset: 0;
+    opacity: 0.12;
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+  section.cta .wrap { position: relative; z-index: 2; }
+  .cta-eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(244,241,236,0.55);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .cta-eyebrow::before {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    background: currentColor;
+  }
+  .cta h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(48px, 7vw, 104px);
+    line-height: 0.98;
+    letter-spacing: -0.015em;
+    margin-top: 28px;
+    max-width: 16ch;
+  }
+  .cta h2 em { font-style: italic; color: rgba(244,241,236,0.55); }
+  .cta-row {
+    margin-top: 48px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .btn-inverse {
+    background: var(--paper);
+    color: var(--ink);
+    padding: 16px 26px;
+    font-size: 13px;
+  }
+  .btn-inverse:hover { background: var(--accent); color: var(--paper); }
+  .btn-inverse-ghost {
+    border: 1px solid rgba(244,241,236,0.25);
+    color: var(--paper);
+    padding: 16px 26px;
+  }
+  .btn-inverse-ghost:hover { border-color: var(--paper); }
+  .cta-meta {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: 96px;
+    padding-top: 32px;
+    border-top: 1px solid rgba(244,241,236,0.15);
+    gap: 32px;
+  }
+  .cta-meta .k {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(244,241,236,0.5);
+  }
+  .cta-meta .v {
+    font-family: var(--serif);
+    font-size: 22px;
+    margin-top: 10px;
+    line-height: 1.3;
+  }
+
+  /* ===== FOOTER ===== */
+  footer {
+    padding: 36px 0 48px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    position: relative;
+    z-index: 1;
+  }
+  footer .wrap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  footer .pulse {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  footer .pulse .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.85); }
+  }
+
+  /* ===== RESPONSIVE ===== */
+  @media (max-width: 960px) {
+    .wrap { padding: 0 24px; }
+    .nav-links { display: none; }
+    .section-head { grid-template-columns: 1fr; gap: 16px; }
+    .problem-grid { grid-template-columns: repeat(2, 1fr); }
+    .approach { grid-template-columns: 1fr; }
+    .meta-strip { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    .cta-meta { grid-template-columns: 1fr; }
+    section.hero { padding: 72px 0 96px; }
+    section.block { padding: 88px 0; }
+    section.cta { padding: 96px 0 112px; }
+  }
+  @media (max-width: 600px) {
+    .problem-grid { grid-template-columns: 1fr; }
+    h1.display { font-size: clamp(44px, 12vw, 80px); }
+  }
+
+  /* subtle fade-in */
+  .fade-up {
+    opacity: 0;
+    transform: translateY(14px);
+    transition: opacity .8s ease, transform .8s cubic-bezier(.2,.7,.2,1);
+  }
+  .fade-up.in { opacity: 1; transform: none; }
+</style>
 </head>
 <body>
 
-  <!-- Loading screen -->
-  <div id="loader">
-    <div class="pixel-canvas" id="pixelCanvas"></div>
+<canvas class="dither" id="dither"></canvas>
+
+<nav class="top">
+  <div class="wrap">
+    <div class="logo">
+      <span class="logo-mark"></span>
+      <span>KAIZEN</span>
+      <span class="logo-meta">/ AI operations</span>
+    </div>
+    <div class="nav-links">
+      <a href="#problem">01 — Problem</a>
+      <a href="#approach">02 — Approach</a>
+      <a href="#stack">03 — Stack</a>
+      <a href="#contact">04 — Contact</a>
+    </div>
+    <a class="nav-cta" href="https://cal.com/nico-vibe/30min" target="_blank" rel="noopener">
+      <span class="dot"></span> Book a call
+    </a>
   </div>
+</nav>
 
-  <script>
-    // ============================
-    // Pixel font definitions (5×7 grid per letter)
-    // ============================
-    const PIXEL_FONT = {
-      K: [
-        [1,0,0,0,1],
-        [1,0,0,1,0],
-        [1,0,1,0,0],
-        [1,1,0,0,0],
-        [1,0,1,0,0],
-        [1,0,0,1,0],
-        [1,0,0,0,1],
-      ],
-      A: [
-        [0,1,1,1,0],
-        [1,0,0,0,1],
-        [1,0,0,0,1],
-        [1,1,1,1,1],
-        [1,0,0,0,1],
-        [1,0,0,0,1],
-        [1,0,0,0,1],
-      ],
-      I: [
-        [1,1,1,1,1],
-        [0,0,1,0,0],
-        [0,0,1,0,0],
-        [0,0,1,0,0],
-        [0,0,1,0,0],
-        [0,0,1,0,0],
-        [1,1,1,1,1],
-      ],
-      Z: [
-        [1,1,1,1,1],
-        [0,0,0,0,1],
-        [0,0,0,1,0],
-        [0,0,1,0,0],
-        [0,1,0,0,0],
-        [1,0,0,0,0],
-        [1,1,1,1,1],
-      ],
-      E: [
-        [1,1,1,1,1],
-        [1,0,0,0,0],
-        [1,0,0,0,0],
-        [1,1,1,1,0],
-        [1,0,0,0,0],
-        [1,0,0,0,0],
-        [1,1,1,1,1],
-      ],
-      N: [
-        [1,0,0,0,1],
-        [1,1,0,0,1],
-        [1,0,1,0,1],
-        [1,0,0,1,1],
-        [1,0,0,0,1],
-        [1,0,0,0,1],
-        [1,0,0,0,1],
-      ],
-    };
+<!-- HERO -->
+<section class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Kaizen — AI operations partner</span>
+    <h1 class="display">
+      AI that actually <em>ships</em> inside your&nbsp;business.
+    </h1>
+    <p class="hero-lead">
+      We're a strategic and hands-on partner for AI automation. We audit how your business runs, design practical automation strategy, and build the systems that increase revenue and expand capacity — without adding headcount.
+    </p>
+    <div class="hero-row">
+      <a class="btn btn-primary" href="https://cal.com/nico-vibe/30min" target="_blank" rel="noopener">
+        Book a discovery call
+        <span class="arrow">→</span>
+      </a>
+      <a class="btn btn-ghost" href="#approach">See how we work</a>
+    </div>
 
-    // ============================
-    // Stroke definitions — writing order per letter
-    // Each stroke is an ordered array of [row, col] pairs,
-    // tracing the path a pen would follow.
-    // ============================
-    const LETTER_STROKES = {
-      K: [
-        // Left vertical (top → bottom)
-        [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0]],
-        // Upper arm (junction → top-right)
-        [[3,1],[2,2],[1,3],[0,4]],
-        // Lower arm (junction → bottom-right)
-        [[4,2],[5,3],[6,4]],
-      ],
-      A: [
-        // Left leg (top arch → bottom-left)
-        [[0,1],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0]],
-        // Right leg (top arch → bottom-right)
-        [[0,2],[0,3],[1,4],[2,4],[3,4],[4,4],[5,4],[6,4]],
-        // Crossbar (left → right)
-        [[3,1],[3,2],[3,3]],
-      ],
-      I: [
-        // Top bar (left → right)
-        [[0,0],[0,1],[0,2],[0,3],[0,4]],
-        // Stem (top → bottom)
-        [[1,2],[2,2],[3,2],[4,2],[5,2]],
-        // Bottom bar (left → right)
-        [[6,0],[6,1],[6,2],[6,3],[6,4]],
-      ],
-      Z: [
-        // Top bar (left → right)
-        [[0,0],[0,1],[0,2],[0,3],[0,4]],
-        // Diagonal (top-right → bottom-left)
-        [[1,4],[2,3],[3,2],[4,1],[5,0]],
-        // Bottom bar (left → right)
-        [[6,0],[6,1],[6,2],[6,3],[6,4]],
-      ],
-      E: [
-        // Left vertical (top → bottom)
-        [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0]],
-        // Top bar (left → right)
-        [[0,1],[0,2],[0,3],[0,4]],
-        // Middle bar (left → right)
-        [[3,1],[3,2],[3,3]],
-        // Bottom bar (left → right)
-        [[6,1],[6,2],[6,3],[6,4]],
-      ],
-      N: [
-        // Left vertical (top → bottom)
-        [[0,0],[1,0],[2,0],[3,0],[4,0],[5,0],[6,0]],
-        // Diagonal (top-left → bottom-right)
-        [[1,1],[2,2],[3,3]],
-        // Right vertical (top → bottom)
-        [[0,4],[1,4],[2,4],[3,4],[4,4],[5,4],[6,4]],
-      ],
-    };
+    <div class="meta-strip">
+      <div class="meta-item">
+        <div class="k">Focus</div>
+        <div class="v">Revenue &amp; capacity</div>
+      </div>
+      <div class="meta-item">
+        <div class="k">Outcome</div>
+        <div class="v">No new headcount</div>
+      </div>
+      <div class="meta-item">
+        <div class="k">Timeline</div>
+        <div class="v">Weeks, not quarters</div>
+      </div>
+      <div class="meta-item">
+        <div class="k">Engagement</div>
+        <div class="v">Audit → Design → Build</div>
+      </div>
+    </div>
+  </div>
+</section>
 
-    // ============================
-    // Build pixel grid
-    // ============================
-    const canvas = document.getElementById('pixelCanvas');
-    const letters = 'KAIZEN'.split('');
-    const blockMap = {};
-    const PIXEL_SIZE = 5;
+<!-- PROBLEM -->
+<section class="block" id="problem">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-index">01 — The problem</span>
+      <div class="lead">
+        <h2>You bought the AI tools. <em>Nothing changed.</em></h2>
+      </div>
+    </div>
 
-    letters.forEach((ch, li) => {
-      const grid = PIXEL_FONT[ch];
-      const letterEl = document.createElement('div');
-      letterEl.className = 'pixel-letter';
-      letterEl.style.gridTemplateColumns = `repeat(${grid[0].length}, ${PIXEL_SIZE}px)`;
+    <div class="problem-grid">
+      <div class="problem-card">
+        <div class="num">01</div>
+        <h3>Processes live in people's heads</h3>
+        <p>Critical workflows are undocumented and inconsistent. When someone leaves, so does the playbook.</p>
+      </div>
+      <div class="problem-card">
+        <div class="num">02</div>
+        <h3>Teams drown in manual work</h3>
+        <p>Documentation, follow-ups, data entry, status updates. The high-leverage work never gets its turn.</p>
+      </div>
+      <div class="problem-card">
+        <div class="num">03</div>
+        <h3>Leaders buy. No one adopts.</h3>
+        <p>AI products pile up in procurement. No one has time or expertise to configure, integrate, or train on them.</p>
+      </div>
+      <div class="problem-card">
+        <div class="num">04</div>
+        <h3>The stack is bloated</h3>
+        <p>Overlapping tools no one fully uses. Budget goes up, clarity goes down, decisions get slower.</p>
+      </div>
+      <div class="problem-card">
+        <div class="num">05</div>
+        <h3>AI initiatives stall out</h3>
+        <p>Pilots launch with fanfare, then quietly die. Internal adoption is low. ROI is uncertain at best.</p>
+      </div>
+      <div class="problem-card">
+        <div class="num">06</div>
+        <h3>The landscape is noise</h3>
+        <p>A thousand vendors. Every demo looks miraculous. It's impossible to know what's real and what fits.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-      grid.forEach((row, ri) => {
-        row.forEach((on, ci) => {
-          const block = document.createElement('div');
-          block.className = 'pixel-block';
-          letterEl.appendChild(block);
-          if (on) blockMap[`${li}-${ri}-${ci}`] = block;
-        });
-      });
+<!-- APPROACH -->
+<section class="block" id="approach">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="section-index">02 — How we work</span>
+      <div class="lead">
+        <h2>A partner, not a deck. <em>We audit, design, and build.</em></h2>
+      </div>
+    </div>
 
-      canvas.appendChild(letterEl);
-    });
+    <div class="approach">
+      <div class="step">
+        <div class="step-label">
+          <span class="idx">STEP 01 / AUDIT</span>
+          <span class="tick"></span>
+        </div>
+        <h3>We map how your <em>business</em> actually runs.</h3>
+        <p>Org structure, workflows, tech stack, strategic goals, bottlenecks. We observe and document what's real — not what the org chart says.</p>
+        <ul>
+          <li>Workflow &amp; handoff analysis</li>
+          <li>Tech stack consolidation map</li>
+          <li>Automation opportunity ranking</li>
+        </ul>
+      </div>
+      <div class="step">
+        <div class="step-label">
+          <span class="idx">STEP 02 / DESIGN</span>
+          <span class="tick"></span>
+        </div>
+        <h3>We design a <em>practical</em> automation strategy.</h3>
+        <p>A clear sequence of AI-driven interventions, prioritised by ROI, risk, and adoption. No speculative roadmaps — a plan that ships.</p>
+        <ul>
+          <li>Prioritised automation roadmap</li>
+          <li>Tool &amp; model selection</li>
+          <li>Change &amp; adoption plan</li>
+        </ul>
+      </div>
+      <div class="step">
+        <div class="step-label">
+          <span class="idx">STEP 03 / BUILD</span>
+          <span class="tick"></span>
+        </div>
+        <h3>We build and embed the <em>systems</em>.</h3>
+        <p>Hands-on implementation alongside your team. Agents, integrations, internal tools, training. We leave things that work — and people who know why.</p>
+        <ul>
+          <li>Custom agents &amp; integrations</li>
+          <li>Team training &amp; enablement</li>
+          <li>Measurable ROI tracking</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
 
-    // ============================
-    // Build ordered sequence following writing strokes
-    // ============================
-    const allPixels = [];
-    letters.forEach((ch, li) => {
-      LETTER_STROKES[ch].forEach((stroke, si) => {
-        stroke.forEach(([row, col]) => {
-          const el = blockMap[`${li}-${row}-${col}`];
-          if (el) allPixels.push({ el, letter: li, stroke: si });
-        });
-      });
-    });
+<!-- TOOLS / STACK -->
+<section class="tools" id="stack">
+  <div class="wrap">
+    <div class="tools-head">
+      <span class="section-index">03 — The stack</span>
+      <p>We work inside the tools your team already uses — and the ones they should.</p>
+    </div>
+  </div>
+  <div class="marquee">
+    <div class="marquee-track" id="track"></div>
+  </div>
+</section>
 
-    // ============================
-    // Assign delays & fire animation
-    // ============================
-    const START_DELAY  = 500;  // ms before first pixel fires (ensures blank screen first)
-    const PIXEL_STEP   = 30;   // ms between consecutive pixels in a stroke
-    const STROKE_PAUSE = 68;   // extra ms when lifting pen between strokes
-    const LETTER_PAUSE = 180;  // extra ms when moving to next letter
+<!-- CTA -->
+<section class="cta" id="contact">
+  <canvas class="dither-inv" id="ditherInv"></canvas>
+  <div class="wrap">
+    <span class="cta-eyebrow">Start with a 30-min discovery call</span>
+    <h2>Let's find where AI actually <em>moves the needle.</em></h2>
+    <p style="margin-top: 32px; max-width: 52ch; color: rgba(244,241,236,0.75); font-size: 17px; line-height: 1.6;">
+      No pitch deck. We'll walk through your org, your stack, and the top three places automation would compound fastest. You leave with a candid take — whether or not we work together.
+    </p>
+    <div class="cta-row">
+      <a class="btn btn-inverse" href="https://cal.com/nico-vibe/30min" target="_blank" rel="noopener">
+        Book a discovery call
+        <span class="arrow">→</span>
+      </a>
+      <a class="btn btn-inverse-ghost" href="mailto:nicholas@kaizengrp.co">nicholas@kaizengrp.co</a>
+    </div>
 
-    let delay = START_DELAY;
-    allPixels.forEach((p, i) => {
-      if (i > 0) {
-        const prev = allPixels[i - 1];
-        if (p.letter !== prev.letter) {
-          delay += PIXEL_STEP + LETTER_PAUSE;
-        } else if (p.stroke !== prev.stroke) {
-          delay += PIXEL_STEP + STROKE_PAUSE;
-        } else {
-          delay += PIXEL_STEP;
+    <div class="cta-meta">
+      <div>
+        <div class="k">Call length</div>
+        <div class="v">30 minutes</div>
+      </div>
+      <div>
+        <div class="k">Cost</div>
+        <div class="v">Complimentary</div>
+      </div>
+      <div>
+        <div class="k">Outcome</div>
+        <div class="v">Three high-leverage opportunities</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Kaizen — AI operations partner</span>
+    <span class="pulse"><span class="dot"></span> Taking on two new partners this quarter</span>
+  </div>
+</footer>
+
+<script>
+  // ============ DITHER CANVAS ============
+  function initDither(canvas, mode = 'dark-on-light') {
+    const ctx = canvas.getContext('2d', { alpha: true });
+    let w, h, dpr;
+    const scale = 3; // dither pixel size
+    let t = 0;
+    let raf;
+
+    function resize() {
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      w = canvas.offsetWidth;
+      h = canvas.offsetHeight;
+      canvas.width = Math.floor(w * dpr / scale);
+      canvas.height = Math.floor(h * dpr / scale);
+      canvas.style.imageRendering = 'pixelated';
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Bayer 4x4 threshold matrix
+    const bayer = [
+      [ 0, 8, 2,10],
+      [12, 4,14, 6],
+      [ 3,11, 1, 9],
+      [15, 7,13, 5],
+    ].map(r => r.map(v => v/16));
+
+    function frame() {
+      t += 0.006;
+      const cw = canvas.width, ch = canvas.height;
+      const img = ctx.createImageData(cw, ch);
+      const d = img.data;
+      for (let y = 0; y < ch; y++) {
+        for (let x = 0; x < cw; x++) {
+          const nx = x * 0.012;
+          const ny = y * 0.012;
+          const n =
+            Math.sin(nx + t) * 0.5 +
+            Math.sin(ny * 1.3 - t * 0.7) * 0.3 +
+            Math.sin((nx + ny) * 0.9 + t * 0.4) * 0.2;
+          const v = (n + 1) / 2;
+          const th = bayer[y & 3][x & 3];
+          const on = v > th + 0.15;
+          const i = (y * cw + x) * 4;
+          if (mode === 'dark-on-light') {
+            d[i] = 10; d[i+1] = 10; d[i+2] = 10;
+            d[i+3] = on ? 255 : 0;
+          } else {
+            d[i] = 244; d[i+1] = 241; d[i+2] = 236;
+            d[i+3] = on ? 180 : 0;
+          }
         }
       }
-      setTimeout(() => p.el.classList.add('lit'), delay);
-    });
-    // Animation finishes — stay as pixel art, no transition away.
-  </script>
+      ctx.putImageData(img, 0, 0);
+      raf = requestAnimationFrame(frame);
+    }
+    frame();
+    return () => cancelAnimationFrame(raf);
+  }
+
+  initDither(document.getElementById('dither'), 'dark-on-light');
+  initDither(document.getElementById('ditherInv'), 'light-on-dark');
+
+  // ============ TOOL MARQUEE ============
+  const TOOLS = [
+    { n: 'Salesforce', logo: 'logos/Salesforce.com_logo.svg.png' },
+    { n: 'SAP',        logo: 'logos/SAP_2011_logo.svg.png' },
+    { n: 'Outlook',    logo: 'logos/Microsoft_Outlook_logo_(2024\u20132025).svg.png' },
+    { n: 'Notion',     logo: 'logos/Notion-logo.svg.png' },
+    { n: 'Granola',    logo: 'logos/granola.svg' },
+    { n: 'Gumloop',    logo: 'logos/gumloop.svg' },
+    { n: 'Zoho',       logo: 'logos/ZOHO_logo_2023.svg.png' },
+    { n: 'Attio',      logo: 'logos/attio.svg' },
+    { n: 'Claude',     logo: 'logos/Claude_AI_logo.svg.png' },
+    { n: 'OpenAI',     logo: 'logos/OpenAI_Logo.svg.png' },
+    { n: 'Slack',      logo: 'logos/Slack_Technologies_Logo.svg.png' },
+    { n: 'Teams',      logo: 'logos/Microsoft_Office_Teams_(2025\u2013present).svg.png' },
+    { n: 'Word',       logo: 'logos/Microsoft_Office_Word_(2025\u2013present).svg.png' },
+    { n: 'Excel',      logo: 'logos/Microsoft_Office_Excel_(2025\u2013present).svg.png' },
+    { n: 'Google',     logo: 'logos/Google_2015_logo.svg.png' },
+    { n: 'Sheets',     logo: 'logos/Google_Sheets_logo_(2014-2020).svg.png' },
+    { n: 'VS Code',    logo: 'logos/Visual_Studio_Code_1.35_icon.svg.png' },
+    { n: 'Python',     logo: 'logos/Python_logo_and_wordmark.svg.png' },
+    { n: 'Docs',       logo: 'logos/Google_Docs_logo_(2014-2020).svg.png' },
+  ];
+
+  function markFor(tool) {
+    if (tool.logo) {
+      return `<span class="tool-mark"><img src="${tool.logo}" alt="${tool.n}" /></span>`;
+    }
+    const first = tool.n[0];
+    return `<span class="tool-mark"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="1" y="1" width="20" height="20" rx="2" stroke="currentColor" stroke-width="1"/><text x="11" y="15" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="500" fill="currentColor">${first}</text></svg></span>`;
+  }
+
+  const track = document.getElementById('track');
+  const items = TOOLS.map(t => `<div class="tool-chip">${markFor(t)}</div><span class="tool-sep"></span>`).join('');
+  track.innerHTML = items + items;
+
+  // ============ FADE-UP ON SCROLL ============
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('h1.display, .hero-lead, .hero-row, .meta-strip, .section-head, .problem-card, .step, .tools-head, .cta h2, .cta-row, .cta-meta').forEach(el => {
+    el.classList.add('fade-up');
+    io.observe(el);
+  });
+</script>
+
 </body>
 </html>
