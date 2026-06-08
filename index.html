@@ -20,45 +20,22 @@
       justify-content: center;
     }
 
-    #wrap {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3rem;
-      max-width: min(88vw, 900px);
-      text-align: center;
-    }
-
     /* Quote — inline spans flow as normal text so line-breaks work naturally */
     #stage {
       font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
       font-size: clamp(1rem, 1.8vw, 1.35rem);
       letter-spacing: 0.08em;
       line-height: 1.9;
+      max-width: min(88vw, 900px);
+      text-align: center;
       user-select: none;
     }
 
     .ch { color: #666; }
-
-    /* KAIZEN — fades in after the scramble; padding-left compensates for
-       trailing letter-spacing so the word stays visually centered */
-    #brand {
-      font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-      font-size: clamp(2rem, 5vw, 4rem);
-      letter-spacing: 0.4em;
-      padding-left: 0.4em;
-      color: #fff;
-      opacity: 0;
-      transition: opacity 2s ease;
-      user-select: none;
-    }
   </style>
 </head>
 <body>
-  <div id="wrap">
-    <div id="stage"></div>
-    <div id="brand">KAIZEN</div>
-  </div>
+  <div id="stage"></div>
 
   <script>
     // ── Tune these ─────────────────────────────────────────────────────────────
@@ -69,11 +46,9 @@
     const TOTAL_DURATION  = 3500;         // ms — when the last character locks in
     const REVEAL_START    = 0.15;         // fraction of TOTAL_DURATION when first char resolves
     const JITTER          = 160;          // ms — random ± applied to each character's resolve time
-    const BRAND_DELAY     = 500;          // ms after scramble completes before KAIZEN starts fading in
     // ──────────────────────────────────────────────────────────────────────────
 
-    const stage   = document.getElementById('stage');
-    const brandEl = document.getElementById('brand');
+    const stage = document.getElementById('stage');
     const chars   = [...TEXT];
     const n       = chars.length;
 
@@ -131,11 +106,8 @@
 
       if (stillScrambling) {
         requestAnimationFrame(tick);
-      } else if (!allResolved) {
-        // Last character just locked in — trigger the KAIZEN fade
-        allResolved = true;
-        setTimeout(() => { brandEl.style.opacity = '1'; }, BRAND_DELAY);
-        // rAF loop ends here; CSS transition handles the rest
+      } else {
+        allResolved = true; // all locked in — rAF loop ends here
       }
     }
 
