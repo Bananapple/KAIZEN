@@ -20,91 +20,93 @@
       justify-content: center;
     }
 
-    /* Single container — font declared once, inherited by all children */
-    #stage {
-      font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-      font-size: clamp(2.5rem, 8vw, 6rem);
-      letter-spacing: 0.2em;
-      line-height: 1;
-      white-space: nowrap;
-      user-select: none;
-    }
-
-    /*
-      Fixed width per slot so noise glyphs (which vary slightly in advance width)
-      never shift the layout. 1ch = width of one character in a monospace font.
-    */
-    .ch {
-      display: inline-block;
-      width: 1ch;
+    #wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3rem;
+      max-width: min(88vw, 900px);
       text-align: center;
     }
 
-    /* Cursor sits flush against the last letter by cancelling its trailing letter-spacing */
-    #cursor {
-      display: inline-block;
+    /* Quote — inline spans flow as normal text so line-breaks work naturally */
+    #stage {
+      font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      font-size: clamp(1rem, 1.8vw, 1.35rem);
+      letter-spacing: 0.08em;
+      line-height: 1.9;
+      user-select: none;
+    }
+
+    .ch { color: #666; }
+
+    /* KAIZEN — fades in after the scramble; padding-left compensates for
+       trailing letter-spacing so the word stays visually centered */
+    #brand {
+      font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      font-size: clamp(2rem, 5vw, 4rem);
+      letter-spacing: 0.4em;
+      padding-left: 0.4em;
       color: #fff;
       opacity: 0;
-      letter-spacing: 0;
-      margin-left: -0.15em;
+      transition: opacity 2s ease;
+      user-select: none;
     }
   </style>
 </head>
 <body>
-  <div id="stage"></div>
+  <div id="wrap">
+    <div id="stage"></div>
+    <div id="brand">KAIZEN</div>
+  </div>
 
   <script>
     // ── Tune these ─────────────────────────────────────────────────────────────
-    const WORD            = 'KAIZEN';
+    const TEXT            = '"be the change you want to see in the world"';
     const NOISE_CHARS     = '!<>-_\\/[]{}=+*^?#$%&@';
     const COLOR_NOISE     = '#666';       // scrambling characters
-    const COLOR_RESOLVED  = '#fff';       // locked-in letters
-    const TOTAL_DURATION  = 2200;         // ms — when the last letter locks in
-    const STAGGER         = 300;          // ms — gap between consecutive letter resolve times
-    const CURSOR_BLINK_MS = 530;          // ms — cursor stays on or off for this long
+    const COLOR_RESOLVED  = '#fff';       // locked-in characters
+    const TOTAL_DURATION  = 3500;         // ms — when the last character locks in
+    const REVEAL_START    = 0.15;         // fraction of TOTAL_DURATION when first char resolves
+    const JITTER          = 160;          // ms — random ± applied to each character's resolve time
+    const BRAND_DELAY     = 500;          // ms after scramble completes before KAIZEN starts fading in
     // ──────────────────────────────────────────────────────────────────────────
 
-    const stage = document.getElementById('stage');
-    const n = WORD.length;
+    const stage   = document.getElementById('stage');
+    const brandEl = document.getElementById('brand');
+    const chars   = [...TEXT];
+    const n       = chars.length;
 
     function randChar() {
       return NOISE_CHARS[Math.floor(Math.random() * NOISE_CHARS.length)];
     }
 
-    // Build one span per letter. Pre-fill with noise so there's no empty-frame flash.
-    const spans = WORD.split('').map(() => {
+    // Build one inline span per character.
+    // Spaces are pre-resolved — they stay as spaces throughout and provide
+    // natural line-break opportunities for the surrounding text.
+    const spans = chars.map((char) => {
       const s = document.createElement('span');
       s.className = 'ch';
-      s.style.color = COLOR_NOISE;
-      s.textContent = randChar();
+      s.textContent = (char === ' ') ? ' ' : randChar();
       stage.appendChild(s);
       return s;
     });
 
-    // Cursor — hidden until all letters are locked in
-    const cursorEl = document.createElement('span');
-    cursorEl.id = 'cursor';
-    cursorEl.textContent = '_';
-    stage.appendChild(cursorEl);
-
-    /*
-      Resolve times: staggered left-to-right so K locks in first, N last.
-      A small random jitter per slot makes the cadence feel organic rather
-      than mechanical. All times are measured from animation start (ms).
-
-      With defaults: K ~700 ms, N ~2200 ms, with ±60 ms jitter on each.
-    */
-    const resolveTimes = spans.map((_, i) => {
-      const base   = TOTAL_DURATION - (n - 1 - i) * STAGGER;
-      const jitter = (Math.random() - 0.5) * STAGGER * 0.4;
-      return Math.max(80, base + jitter);
+    // Resolve times spread linearly from REVEAL_START → TOTAL_DURATION,
+    // with per-character jitter for an organic feel. Spaces get time 0.
+    const resolveStart = TOTAL_DURATION * REVEAL_START;
+    const resolveTimes = chars.map((char, i) => {
+      if (char === ' ') return 0;
+      const frac = i / (n - 1);
+      const base = resolveStart + frac * (TOTAL_DURATION - resolveStart);
+      return Math.max(50, base + (Math.random() - 0.5) * JITTER);
     });
 
-    const resolved   = new Array(n).fill(false);
-    let allResolved  = false;
-    let startTime    = null;
-    let cursorOn     = true;
-    let lastBlink    = null;
+    // Pre-mark spaces as resolved
+    const resolved = chars.map((c) => c === ' ');
+
+    let allResolved = false;
+    let startTime   = null;
 
     function tick(ts) {
       if (!startTime) startTime = ts;
@@ -113,11 +115,11 @@
       let stillScrambling = false;
 
       for (let i = 0; i < n; i++) {
-        if (resolved[i]) continue; // already locked — leave it alone
+        if (resolved[i]) continue;
 
         if (elapsed >= resolveTimes[i]) {
-          // Lock in the real letter
-          spans[i].textContent = WORD[i];
+          // Lock in the real character
+          spans[i].textContent = chars[i];
           spans[i].style.color = COLOR_RESOLVED;
           resolved[i]          = true;
         } else {
@@ -127,21 +129,14 @@
         }
       }
 
-      // The frame the last letter locks in: reveal the cursor
-      if (!allResolved && !stillScrambling) {
+      if (stillScrambling) {
+        requestAnimationFrame(tick);
+      } else if (!allResolved) {
+        // Last character just locked in — trigger the KAIZEN fade
         allResolved = true;
-        lastBlink   = ts;
-        cursorEl.style.opacity = '1';
+        setTimeout(() => { brandEl.style.opacity = '1'; }, BRAND_DELAY);
+        // rAF loop ends here; CSS transition handles the rest
       }
-
-      // Blink: flip every CURSOR_BLINK_MS
-      if (allResolved && ts - lastBlink >= CURSOR_BLINK_MS) {
-        cursorOn = !cursorOn;
-        cursorEl.style.opacity = cursorOn ? '1' : '0';
-        lastBlink = ts;
-      }
-
-      requestAnimationFrame(tick);
     }
 
     requestAnimationFrame(tick);
