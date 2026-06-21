@@ -3,115 +3,369 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KAIZEN</title>
+  <title>Kaizen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
     html, body {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
+      width: 100%; height: 100%;
       background: #000;
-    }
-
-    body {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      overflow: hidden;
     }
-
-    /* Quote — inline spans flow as normal text so line-breaks work naturally */
     #stage {
       font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-      font-size: clamp(1rem, 1.8vw, 1.35rem);
-      letter-spacing: 0.08em;
-      line-height: 1.9;
-      max-width: min(88vw, 900px);
-      text-align: center;
+      line-height: 1.3;
+      color: #888;
       user-select: none;
+      white-space: pre;
+      letter-spacing: 0;
+      display: block;
     }
-
-    .ch { color: #666; }
+    #tagline {
+      margin-top: 1.2em;
+      font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      letter-spacing: 0.06em;
+      user-select: none;
+      text-align: center;
+    }
+    .ch { color: #555; }
+    #tagline .word { display: block; }
   </style>
 </head>
 <body>
-  <div id="stage"></div>
+  <pre id="stage"></pre>
+  <div id="tagline"></div>
 
   <script>
-    // ── Tune these ─────────────────────────────────────────────────────────────
-    const TEXT            = '"be the change you want to see in the world"';
-    const NOISE_CHARS     = '!<>-_\\/[]{}=+*^?#$%&@';
-    const COLOR_NOISE     = '#666';       // scrambling characters
-    const COLOR_RESOLVED  = '#fff';       // locked-in characters
-    const TOTAL_DURATION  = 3500;         // ms — when the last character locks in
-    const REVEAL_START    = 0.15;         // fraction of TOTAL_DURATION when first char resolves
-    const JITTER          = 160;          // ms — random ± applied to each character's resolve time
-    // ──────────────────────────────────────────────────────────────────────────
+  (() => {
+    const COLS = 240;
+    const ROWS = 78;   // trimmed — rock ends at row 77
+    const CX   = 120;
 
-    const stage = document.getElementById('stage');
-    const chars   = [...TEXT];
-    const n       = chars.length;
+    const BG = 0, ROCK = 1, BODY = 2, BAND = 3, GALLERY = 4, LANTERN = 5, CAP = 6, WINDOW = 7;
 
-    function randChar() {
-      return NOISE_CHARS[Math.floor(Math.random() * NOISE_CHARS.length)];
+    // Gallery: row 5 = horizontal top rail, rows 6–7 = vertical balusters
+    const GAL_FLOOR = '=-========-=======-=======';
+    const GAL_RAIL  = '|    |    |    |    |    |';
+
+    const POOLS = [
+      /* BG */      '                                             ',
+      /* ROCK */    '#@%08BQ&#@+=#@%08B+=-#@%08#@%0#@%#@%08',
+      /* BODY */    '|H+=-H|+=H-H|+-=H||H',
+      /* BAND */    '  -  =  -  =  -  ',
+      /* GALLERY */ GAL_RAIL,
+      /* LANTERN */ 'Oo0*+Oo0O*+o',
+      /* CAP */     '/\\^/\\^',
+      /* WINDOW */  'oO0[]() ',
+    ];
+
+    // ── Geometry ──────────────────────────────────────────────────────────────
+    // Linear frustum taper: hw 6 at top (row 8) → 16 at base (row 65)
+    function bodyHW(row) {
+      return 6 + (row - 8) / 57 * 10;
     }
 
-    // Build one inline span per character.
-    // Spaces are pre-resolved — they stay as spaces throughout and provide
-    // natural line-break opportunities for the surrounding text.
-    const spans = chars.map((char) => {
-      const s = document.createElement('span');
-      s.className = 'ch';
-      s.textContent = (char === ' ') ? ' ' : randChar();
-      stage.appendChild(s);
-      return s;
-    });
+    // Svaberg granite dome — rows 66–77 (12 rows, half the original height)
+    function svabergHW(row) {
+      const r    = (row - 66) / 11;
+      const base = 9 + 85 * Math.sqrt(Math.max(0, r));
+      const bump = 4 * Math.sin(row * 1.7) + 3 * Math.cos(row * 2.8 + 1.3);
+      return base + bump;
+    }
 
-    // Resolve times spread linearly from REVEAL_START → TOTAL_DURATION,
-    // with per-character jitter for an organic feel. Spaces get time 0.
-    const resolveStart = TOTAL_DURATION * REVEAL_START;
-    const resolveTimes = chars.map((char, i) => {
-      if (char === ' ') return 0;
-      const frac = i / (n - 1);
-      const base = resolveStart + frac * (TOTAL_DURATION - resolveStart);
-      return Math.max(50, base + (Math.random() - 0.5) * JITTER);
-    });
+    // Window rows — 3 chars wide (dx <= 1) for visible detail
+    const WIN_ROWS = new Set([13, 20, 29, 42, 56]);
 
-    // Pre-mark spaces as resolved
-    const resolved = chars.map((c) => c === ' ');
+    function getZone(row, col) {
+      const dx = Math.abs(col - CX);
+      if (row === 0 && dx <= 1)                  return CAP;
+      if (row >= 1  && row <= 4  && dx <= 6)     return LANTERN;
+      if (row >= 5  && row <= 7  && dx <= 9)     return GALLERY;
+      if (row >= 8  && row <= 65) {
+        const hw = bodyHW(row);
+        if (dx > hw) return BG;
+        if (WIN_ROWS.has(row) && dx <= 1)         return WINDOW;   // 3-char wide window
+        if (row >= 26 && row <= 32)               return BAND;
+        return BODY;
+      }
+      if (row >= 66 && dx <= svabergHW(row))      return ROCK;
+      return BG;
+    }
 
-    let allResolved = false;
-    let startTime   = null;
+    function getPool(zone, row) {
+      if (zone === GALLERY) return row === 5 ? GAL_FLOOR : GAL_RAIL;
+      return POOLS[zone];
+    }
 
-    function tick(ts) {
-      if (!startTime) startTime = ts;
-      const elapsed = ts - startTime;
+    // ── Cell state ────────────────────────────────────────────────────────────
+    const N       = ROWS * COLS;
+    const zoneMap = new Uint8Array(N);
+    for (let r = 0; r < ROWS; r++)
+      for (let c = 0; c < COLS; c++)
+        zoneMap[r * COLS + c] = getZone(r, c);
 
-      let stillScrambling = false;
+    const cellChar     = new Array(N);
+    const cellNextSwap = new Float64Array(N);
 
-      for (let i = 0; i < n; i++) {
-        if (resolved[i]) continue;
+    function swapDelay(zone) {
+      if (zone === WINDOW) return 2000 + Math.random() * 3000;
+      return zone === BG
+        ? 500 + Math.random() * 500
+        : 150 + Math.random() * 200;
+    }
 
-        if (elapsed >= resolveTimes[i]) {
-          // Lock in the real character
-          spans[i].textContent = chars[i];
-          spans[i].style.color = COLOR_RESOLVED;
-          resolved[i]          = true;
-        } else {
-          // Keep churning through noise glyphs
-          spans[i].textContent = randChar();
-          stillScrambling = true;
+    for (let i = 0; i < N; i++) {
+      const r    = Math.floor(i / COLS);
+      const pool = getPool(zoneMap[i], r);
+      cellChar[i]     = pool[Math.floor(Math.random() * pool.length)];
+      cellNextSwap[i] = Math.random() * 300;
+    }
+
+    // ── Beam ──────────────────────────────────────────────────────────────────
+    const BEAM_PERIOD   = 5000;
+    const BEAM_ORIG_ROW = 2;
+    const BEAM_ORIG_COL = CX;
+    const BEAM_MAX_DIST = 117;
+
+    // Brightness rank — higher = brighter — used to merge overlapping beam effects
+    const BRIGHT_RANK = { '#': 8, '@': 7, '*': 6, '+': 5, '=': 4, ':': 3, '-': 2, '.': 1 };
+    function brighter(a, b) {
+      if (a === undefined) return b;
+      if (b === undefined) return a;
+      return (BRIGHT_RANK[a] || 0) >= (BRIGHT_RANK[b] || 0) ? a : b;
+    }
+
+    function getBeamChar(r, c, angle) {
+      const sinA      = Math.sin(angle);
+      const cosA      = Math.cos(angle);
+      const rowDist   = r - BEAM_ORIG_ROW;
+      const colOffset = c - BEAM_ORIG_COL;
+      let result;
+
+      // ── Shaft — thicker, with bright core spine + atmospheric halo ─────────
+      const shaftVis = Math.max(0, sinA) * (0.4 + 0.6 * Math.abs(cosA));
+      if (shaftVis > 0 && colOffset * cosA >= 0) {
+        const shaftDist = Math.abs(colOffset);
+        if (shaftDist >= 3 && shaftDist <= BEAM_MAX_DIST) {
+          const vertHW   = 1.5 + shaftDist * 0.04;
+          const aRowDist = Math.abs(rowDist);
+          if (aRowDist <= vertHW) {
+            const distFade  = Math.pow(1 - shaftDist / BEAM_MAX_DIST, 0.35);
+            const vertFade  = 1 - aRowDist / (vertHW + 0.5);
+            const coreBoost = aRowDist < 0.5 ? 0.30 * shaftVis
+                            : aRowDist < 1.5 ? 0.12 * shaftVis : 0;
+            const intensity = distFade * shaftVis * vertFade + coreBoost;
+            if      (intensity > 0.80) result = brighter(result, '#');
+            else if (intensity > 0.60) result = brighter(result, '+');
+            else if (intensity > 0.42) result = brighter(result, '=');
+            else if (intensity > 0.26) result = brighter(result, ':');
+            else if (intensity > 0.14) result = brighter(result, '-');
+            else if (intensity > 0.07) result = brighter(result, '.');
+          } else if (aRowDist <= vertHW + 2) {
+            // Atmospheric scatter just outside the beam — light bleeding into air
+            const scatter = shaftVis * (1 - shaftDist / BEAM_MAX_DIST) * 0.18;
+            if (Math.random() < scatter) result = brighter(result, '.');
+          }
         }
       }
 
-      if (stillScrambling) {
-        requestAnimationFrame(tick);
-      } else {
-        allResolved = true; // all locked in — rAF loop ends here
+      // ── Lens flare — vertical bright streak during the swing toward viewer ──
+      const lensI = Math.pow(Math.max(0, sinA), 2) * (1 - Math.abs(cosA) * 0.6);
+      if (lensI > 0.15 && Math.abs(colOffset) <= 1 && rowDist >= 4 && rowDist <= 28) {
+        const vDist   = rowDist - 4;
+        const vFade   = Math.exp(-vDist * vDist / 120);
+        const colFade = colOffset === 0 ? 1.0 : 0.55;
+        const v       = vFade * lensI * colFade;
+        if      (v > 0.55) result = brighter(result, '#');
+        else if (v > 0.35) result = brighter(result, '+');
+        else if (v > 0.22) result = brighter(result, '*');
+        else if (v > 0.13) result = brighter(result, '=');
+        else if (v > 0.07) result = brighter(result, ':');
+        else if (v > 0.03) result = brighter(result, '-');
       }
+
+      // ── Flash — radial burst with hot solid core + wider probabilistic bloom ─
+      const flash = Math.pow(Math.max(0, sinA), 4);
+      if (flash > 0.02) {
+        const dist2 = rowDist * rowDist * 3 + colOffset * colOffset;
+
+        // Hot solid core — deterministic at peak
+        const coreR = 9 * flash;
+        if (flash > 0.45 && dist2 < coreR * coreR) {
+          let coreCh;
+          if      (dist2 < 3 && flash > 0.85) coreCh = '#';
+          else if (flash > 0.75)              coreCh = '@';
+          else if (flash > 0.60)              coreCh = '*';
+          else                                coreCh = '+';
+          result = brighter(result, coreCh);
+        } else {
+          // Probabilistic outer bloom
+          const tight    = Math.exp(-dist2 / 200) * flash * 0.95;
+          const widePeak = Math.exp(-dist2 / 700) * Math.pow(flash, 2) * 0.85;
+          if (Math.random() < Math.max(tight, widePeak)) {
+            let bloomCh;
+            if      (flash > 0.90) bloomCh = '#';
+            else if (flash > 0.75) bloomCh = '+';
+            else if (flash > 0.55) bloomCh = '*';
+            else if (flash > 0.35) bloomCh = '=';
+            else                   bloomCh = ':';
+            result = brighter(result, bloomCh);
+          }
+        }
+      }
+
+      return result;
     }
 
-    requestAnimationFrame(tick);
+    // ── Render loop ───────────────────────────────────────────────────────────
+    const stage = document.getElementById('stage');
+
+    function render(ts) {
+      const angle = (ts % BEAM_PERIOD) / BEAM_PERIOD * 2 * Math.PI;
+
+      const lines = [];
+      for (let r = 0; r < ROWS; r++) {
+        const row = [];
+        for (let c = 0; c < COLS; c++) {
+          const i    = r * COLS + c;
+          const zone = zoneMap[i];
+          let ch;
+
+          if (zone === BG) ch = getBeamChar(r, c, angle);
+
+          if (ch === undefined) {
+            // Group-of-3 flickering: primary cell (c % 3 === 0) owns the timer.
+            // When it fires, exactly one random member of the triplet changes.
+            if (c % 3 === 0 && ts >= cellNextSwap[i]) {
+              const member = Math.floor(Math.random() * 3);  // 0, 1, or 2
+              const j      = i + member;
+              const pool   = getPool(zoneMap[j], r);
+              cellChar[j]  = pool[Math.floor(Math.random() * pool.length)];
+              cellNextSwap[i] = ts + swapDelay(zone);  // primary holds the group timer
+            }
+            ch = cellChar[i];
+          }
+
+          row.push(ch);
+        }
+        lines.push(row.join(''));
+      }
+
+      stage.textContent = lines.join('\n');
+      requestAnimationFrame(render);
+    }
+
+    // ── Sizing ────────────────────────────────────────────────────────────────
+    const taglineEl = document.getElementById('tagline');
+
+    function setSize() {
+      const byW   = (window.innerWidth  * 0.41) / (COLS * 0.62);
+      const byH   = (window.innerHeight * 0.34) / (ROWS * 1.3);
+      const fs    = Math.max(4, Math.floor(Math.min(byW, byH)));
+      const tagFs = Math.max(22, Math.round(fs * 3.6));
+      stage.style.fontSize     = fs + 'px';
+      taglineEl.style.fontSize = tagFs + 'px';
+    }
+
+    setSize();
+    window.addEventListener('resize', setSize);
+    document.fonts.ready.then(setSize);
+    requestAnimationFrame(render);
+
+    // ── Tagline: "Strategic advice on <rotating word>" ────────────────────────
+    const PREFIX          = 'Strategic advice on';
+    const WORDS           = ['AI', 'fundraising', 'M&A', 'Hiring'];
+    const NOISE           = '!<>-_\\/[]{}=+*^?#$%&@';
+    const SWAP_INTERVAL   = 2000;   // ms between word changes
+    const WORD_REVEAL_MS  = 800;    // duration of scramble-in for a swapped word
+    const INTRO_REVEAL_MS = 3000;   // duration of the initial full-sentence reveal
+
+    function makeSpan(ch) {
+      const s       = document.createElement('span');
+      s.className   = 'ch';
+      s.textContent = ch === ' ' ? ' ' : NOISE[Math.floor(Math.random() * NOISE.length)];
+      return s;
+    }
+
+    function scramble(spans, chars, duration) {
+      const n = chars.length;
+      const revStart = duration * 0.15;
+      const revTimes = chars.map((ch, i) => {
+        if (ch === ' ') return 0;
+        const base = revStart + (n > 1 ? (i / (n - 1)) : 0) * (duration - revStart);
+        return Math.max(40, base + (Math.random() - 0.5) * (duration > 1500 ? 150 : 100));
+      });
+      const resolved = chars.map(c => c === ' ');
+      let t0 = null;
+      function tick(ts) {
+        if (!t0) t0 = ts;
+        const elapsed = ts - t0;
+        let any = false;
+        for (let i = 0; i < n; i++) {
+          if (resolved[i]) continue;
+          if (elapsed >= revTimes[i]) {
+            spans[i].textContent = chars[i];
+            spans[i].style.color = '#ccc';
+            resolved[i] = true;
+          } else {
+            spans[i].textContent = NOISE[Math.floor(Math.random() * NOISE.length)];
+            any = true;
+          }
+        }
+        if (any) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    }
+
+    function startTagline() {
+      // Prefix renders instantly as plain resolved text
+      const prefixNode       = document.createElement('span');
+      prefixNode.textContent = PREFIX;
+      prefixNode.style.color = '#ccc';
+      taglineEl.appendChild(prefixNode);
+
+      // Fixed-width word slot — text-align: left + min-width keeps prefix anchored
+      const wordEl     = document.createElement('span');
+      wordEl.className = 'word';
+      taglineEl.appendChild(wordEl);
+
+      function setWordPlain(text) {
+        wordEl.innerHTML       = '';
+        const s                = document.createElement('span');
+        s.textContent          = text;
+        s.style.color          = '#ccc';
+        wordEl.appendChild(s);
+      }
+
+      function setWordScramble(text) {
+        wordEl.innerHTML = '';
+        const spans = [...text].map(ch => {
+          const s = makeSpan(ch);
+          wordEl.appendChild(s);
+          return s;
+        });
+        scramble(spans, [...text], WORD_REVEAL_MS);
+      }
+
+      // Initial state: first word appears instantly, no scramble
+      let wordIdx = 0;
+      setWordPlain(WORDS[wordIdx]);
+
+      // Cycle every SWAP_INTERVAL — only the word scrambles
+      setInterval(() => {
+        wordIdx = (wordIdx + 1) % WORDS.length;
+        setWordScramble(WORDS[wordIdx]);
+      }, SWAP_INTERVAL);
+    }
+
+    startTagline();
+  })();
   </script>
 </body>
 </html>

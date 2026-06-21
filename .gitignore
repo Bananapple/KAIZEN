@@ -155,3 +155,4 @@ vite.config.ts.timestamp-*
 *.sln
 *.sw?
 *.local
+.vercel
