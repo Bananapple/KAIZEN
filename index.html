@@ -27,20 +27,44 @@
       letter-spacing: 0;
       display: block;
     }
-    #tagline {
-      margin-top: 1.2em;
+    #offerings {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 28px;
+      margin-top: 1.6em;
+      flex-wrap: wrap;
       font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-      letter-spacing: 0.06em;
-      user-select: none;
-      text-align: center;
+      font-size: 13px;
+      line-height: 1.35;
+      opacity: 0;
+      transition: opacity 0.9s ease-out;
     }
-    .ch { color: #555; }
-    #tagline .word { display: block; }
+    #offerings.visible { opacity: 1; }
+    .box {
+      white-space: pre;
+      cursor: pointer;
+      margin: 0;
+      color: #555;
+      opacity: 0.55;
+      transition: color 0.25s, opacity 0.25s;
+      user-select: none;
+    }
+    .box.selected { color: #ccc; opacity: 1; }
+    .box:hover { color: #888; opacity: 0.85; }
+    .box.selected:hover { color: #ddd; opacity: 1; }
+
+    @media (max-width: 720px) {
+      #offerings { flex-direction: column; align-items: center; gap: 12px; font-size: 11px; }
+    }
+    @media (max-height: 720px) {
+      #offerings { font-size: 11px; margin-top: 0.9em; }
+    }
   </style>
 </head>
 <body>
   <pre id="stage"></pre>
-  <div id="tagline"></div>
+  <div id="offerings"></div>
 
   <script>
   (() => {
@@ -224,10 +248,17 @@
     }
 
     // ── Render loop ───────────────────────────────────────────────────────────
-    const stage = document.getElementById('stage');
+    const stage        = document.getElementById('stage');
+    const offeringsEl  = document.getElementById('offerings');
+    let offeringsShown = false;
 
     function render(ts) {
       const angle = (ts % BEAM_PERIOD) / BEAM_PERIOD * 2 * Math.PI;
+      // Reveal the offerings on the first beam peak (sinA near 1)
+      if (!offeringsShown && Math.sin(angle) > 0.88) {
+        offeringsEl.classList.add('visible');
+        offeringsShown = true;
+      }
 
       const lines = [];
       for (let r = 0; r < ROWS; r++) {
@@ -262,15 +293,11 @@
     }
 
     // ── Sizing ────────────────────────────────────────────────────────────────
-    const taglineEl = document.getElementById('tagline');
-
     function setSize() {
-      const byW   = (window.innerWidth  * 0.41) / (COLS * 0.62);
-      const byH   = (window.innerHeight * 0.34) / (ROWS * 1.3);
-      const fs    = Math.max(4, Math.floor(Math.min(byW, byH)));
-      const tagFs = Math.max(22, Math.round(fs * 3.6));
-      stage.style.fontSize     = fs + 'px';
-      taglineEl.style.fontSize = tagFs + 'px';
+      const byW = (window.innerWidth  * 0.41) / (COLS * 0.62);
+      const byH = (window.innerHeight * 0.34) / (ROWS * 1.3);
+      const fs  = Math.max(4, Math.floor(Math.min(byW, byH)));
+      stage.style.fontSize = fs + 'px';
     }
 
     setSize();
@@ -278,93 +305,36 @@
     document.fonts.ready.then(setSize);
     requestAnimationFrame(render);
 
-    // ── Tagline: "Strategic advice on <rotating word>" ────────────────────────
-    const PREFIX          = 'Strategic advice on';
-    const WORDS           = ['AI', 'fundraising', 'M&A', 'Hiring'];
-    const NOISE           = '!<>-_\\/[]{}=+*^?#$%&@';
-    const SWAP_INTERVAL   = 2000;   // ms between word changes
-    const WORD_REVEAL_MS  = 800;    // duration of scramble-in for a swapped word
-    const INTRO_REVEAL_MS = 3000;   // duration of the initial full-sentence reveal
+    // ── Offerings: three Claude-Code-style boxes ──────────────────────────────
+    const OFFERINGS = [
+      { id: 'ai',       title: 'AI',       items: ['Agentic workflows', 'LLM pipelines', 'Context architecture', 'Automation'] },
+      { id: 'capital',  title: 'Capital',  items: ['Fundraising', 'M&A', 'Succession'] },
+      { id: 'advisory', title: 'Advisory', items: ['PMF', 'Hiring', 'Growth acceleration', 'Capital allocation'] },
+    ];
+    const BOX_W = 28;
 
-    function makeSpan(ch) {
-      const s       = document.createElement('span');
-      s.className   = 'ch';
-      s.textContent = ch === ' ' ? ' ' : NOISE[Math.floor(Math.random() * NOISE.length)];
-      return s;
-    }
-
-    function scramble(spans, chars, duration) {
-      const n = chars.length;
-      const revStart = duration * 0.15;
-      const revTimes = chars.map((ch, i) => {
-        if (ch === ' ') return 0;
-        const base = revStart + (n > 1 ? (i / (n - 1)) : 0) * (duration - revStart);
-        return Math.max(40, base + (Math.random() - 0.5) * (duration > 1500 ? 150 : 100));
+    function buildBox(o) {
+      const titleDashes = BOX_W - o.title.length - 5;
+      const titleLine   = `╭─ ${o.title} ` + '─'.repeat(titleDashes) + '╮';
+      const contentLines = o.items.map(item => {
+        const pad = ' '.repeat(BOX_W - item.length - 6);
+        return `│ • ${item}${pad} │`;
       });
-      const resolved = chars.map(c => c === ' ');
-      let t0 = null;
-      function tick(ts) {
-        if (!t0) t0 = ts;
-        const elapsed = ts - t0;
-        let any = false;
-        for (let i = 0; i < n; i++) {
-          if (resolved[i]) continue;
-          if (elapsed >= revTimes[i]) {
-            spans[i].textContent = chars[i];
-            spans[i].style.color = '#ccc';
-            resolved[i] = true;
-          } else {
-            spans[i].textContent = NOISE[Math.floor(Math.random() * NOISE.length)];
-            any = true;
-          }
-        }
-        if (any) requestAnimationFrame(tick);
-      }
-      requestAnimationFrame(tick);
+      const bottomLine = '╰' + '─'.repeat(BOX_W - 2) + '╯';
+      return [titleLine, ...contentLines, bottomLine].join('\n');
     }
 
-    function startTagline() {
-      // Prefix renders instantly as plain resolved text
-      const prefixNode       = document.createElement('span');
-      prefixNode.textContent = PREFIX;
-      prefixNode.style.color = '#ccc';
-      taglineEl.appendChild(prefixNode);
-
-      // Fixed-width word slot — text-align: left + min-width keeps prefix anchored
-      const wordEl     = document.createElement('span');
-      wordEl.className = 'word';
-      taglineEl.appendChild(wordEl);
-
-      function setWordPlain(text) {
-        wordEl.innerHTML       = '';
-        const s                = document.createElement('span');
-        s.textContent          = text;
-        s.style.color          = '#ccc';
-        wordEl.appendChild(s);
-      }
-
-      function setWordScramble(text) {
-        wordEl.innerHTML = '';
-        const spans = [...text].map(ch => {
-          const s = makeSpan(ch);
-          wordEl.appendChild(s);
-          return s;
-        });
-        scramble(spans, [...text], WORD_REVEAL_MS);
-      }
-
-      // Initial state: first word appears instantly, no scramble
-      let wordIdx = 0;
-      setWordPlain(WORDS[wordIdx]);
-
-      // Cycle every SWAP_INTERVAL — only the word scrambles
-      setInterval(() => {
-        wordIdx = (wordIdx + 1) % WORDS.length;
-        setWordScramble(WORDS[wordIdx]);
-      }, SWAP_INTERVAL);
-    }
-
-    startTagline();
+    OFFERINGS.forEach(o => {
+      const boxEl       = document.createElement('pre');
+      boxEl.className   = 'box' + (o.id === 'capital' ? ' selected' : '');
+      boxEl.dataset.id  = o.id;
+      boxEl.textContent = buildBox(o);
+      boxEl.addEventListener('click', () => {
+        offeringsEl.querySelectorAll('.box').forEach(b => b.classList.remove('selected'));
+        boxEl.classList.add('selected');
+      });
+      offeringsEl.appendChild(boxEl);
+    });
   })();
   </script>
 </body>
