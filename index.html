@@ -73,17 +73,7 @@
     }
     #enter-hint.visible { opacity: 1; }
 
-    #flash-overlay {
-      position: fixed; inset: 0;
-      background: #fff;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.35s ease-in-out;
-      z-index: 10;
-    }
-    #flash-overlay.on { opacity: 1; pointer-events: all; }
-
-    #contact-screen {
+#contact-screen {
       position: fixed; inset: 0;
       display: none;
       flex-direction: column;
@@ -124,7 +114,6 @@
   <div id="offerings"></div>
   <div id="enter-hint"></div>
   <div id="contact-screen"></div>
-  <div id="flash-overlay"></div>
 
   <script>
   (() => {
@@ -311,9 +300,13 @@
     const stage         = document.getElementById('stage');
     const offeringsEl   = document.getElementById('offerings');
     const hintEl        = document.getElementById('enter-hint');
-    const flashEl       = document.getElementById('flash-overlay');
     const contactScreen = document.getElementById('contact-screen');
     let offeringsShown  = false;
+
+    // Dissolve transition state (shared with openForm/closeForm)
+    const TRANS_DURATION = 750;
+    let transitionDir   = 0;   // 1 = dissolving in (→ form), -1 = dissolving out (→ lighthouse)
+    let transitionStart = 0;
 
     function render(ts) {
       const angle = (ts % BEAM_PERIOD) / BEAM_PERIOD * 2 * Math.PI;
@@ -325,6 +318,13 @@
         offeringsShown = true;
       }
 
+      // Compute transition brightness once per frame
+      let transBright = 0;
+      if (transitionDir !== 0) {
+        const t = Math.min(1, (ts - transitionStart) / TRANS_DURATION);
+        transBright = transitionDir === 1 ? t : 1 - t;
+      }
+
       const lines = [];
       for (let r = 0; r < ROWS; r++) {
         const row = [];
@@ -333,7 +333,18 @@
           const zone = zoneMap[i];
           let ch;
 
-          if (zone === BG) ch = getBeamChar(r, c, angle);
+          if (zone === BG) {
+            ch = getBeamChar(r, c, angle);
+            // Dissolve: override BG cells with bright chars matching the beam flash aesthetic
+            if (transBright > 0 && Math.random() < transBright * 0.92) {
+              if      (transBright > 0.85) ch = '#';
+              else if (transBright > 0.70) ch = '@';
+              else if (transBright > 0.55) ch = '*';
+              else if (transBright > 0.40) ch = '+';
+              else if (transBright > 0.25) ch = '=';
+              else                         ch = ':';
+            }
+          }
 
           if (ch === undefined) {
             // Group-of-3 flickering: primary cell (c % 3 === 0) owns the timer.
@@ -413,29 +424,72 @@
       );
     }
 
+    // Scrambles textContent of an element to/from noise chars matching the beam flash
+    function dissolveText(el, dir, duration, offering) {
+      const NOISE   = '#@*+=:-';
+      const target  = offering ? buildBox(offering) : el.textContent;
+      const chars   = [...target];
+      const n       = chars.length;
+      const triggers = chars.map(ch => ch === '\n' ? -1 : Math.random() * duration * 0.65);
+      let t0 = null;
+      function tick(ts) {
+        if (!t0) t0 = ts;
+        const elapsed = ts - t0;
+        const result  = chars.map((ch, i) => {
+          if (ch === '\n') return '\n';
+          const trig = triggers[i];
+          if (dir === 'out') {
+            if (elapsed < trig) return ch;
+            const phase = (elapsed - trig) / (duration * 0.38);
+            return phase >= 1 ? ' ' : NOISE[Math.floor(Math.random() * NOISE.length)];
+          } else {
+            const resolveAt = duration - trig;
+            if (elapsed > resolveAt) return ch;
+            if (elapsed > resolveAt - duration * 0.38)
+              return NOISE[Math.floor(Math.random() * NOISE.length)];
+            return ' ';
+          }
+        });
+        el.textContent = result.join('');
+        if (elapsed < duration * 1.1) requestAnimationFrame(tick);
+        else if (dir === 'in') el.textContent = target;
+      }
+      requestAnimationFrame(tick);
+    }
+
     function openForm() {
-      if (formOpen) return;
+      if (formOpen || transitionDir !== 0) return;
       formOpen = true;
       subjectInput.value = OFFERINGS[selectedIdx].title;
       companyInput.value = '';
       msgInput.value     = '';
-      hintEl.classList.remove('visible');
-      flashEl.classList.add('on');
+      // Dissolve: lighthouse grid brightens, text scrambles out
+      transitionDir   = 1;
+      transitionStart = performance.now();
+      hintEl.style.transition = `opacity ${TRANS_DURATION}ms`;
+      hintEl.style.opacity    = '0';
+      offeringsEl.querySelectorAll('.box').forEach(box => dissolveText(box, 'out', TRANS_DURATION));
       setTimeout(() => {
         contactScreen.classList.add('active');
-        flashEl.classList.remove('on');
+        transitionDir = 0;
         companyInput.focus();
-      }, 380);
+      }, TRANS_DURATION);
     }
 
     function closeForm() {
-      flashEl.classList.add('on');
+      if (transitionDir !== 0) return;
+      contactScreen.classList.remove('active');
+      formOpen = false;
+      // Dissolve: lighthouse grid dims back, text crystallises in
+      transitionDir   = -1;
+      transitionStart = performance.now();
+      offeringsEl.querySelectorAll('.box').forEach((box, i) =>
+        dissolveText(box, 'in', TRANS_DURATION, OFFERINGS[i])
+      );
       setTimeout(() => {
-        contactScreen.classList.remove('active');
-        formOpen = false;
-        flashEl.classList.remove('on');
-        hintEl.classList.add('visible');
-      }, 380);
+        transitionDir       = 0;
+        hintEl.style.opacity = '1';
+      }, TRANS_DURATION);
     }
 
     function submitForm() {
