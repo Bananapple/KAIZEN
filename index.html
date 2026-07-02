@@ -55,11 +55,27 @@
     .box.selected:hover { color: #ddd; opacity: 1; }
 
     @media (max-width: 720px) {
-      #offerings { flex-direction: column; align-items: center; gap: 12px; font-size: 11px; }
+      #offerings { flex-direction: column; align-items: center; gap: 12px; font-size: 11px; margin-top: 1em; }
+      .box:not(.selected) { display: none; }
     }
     @media (max-height: 720px) {
       #offerings { font-size: 11px; margin-top: 0.9em; }
     }
+
+    #mobile-nav {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 0.6em;
+      font-family: 'JetBrains Mono', 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+      font-size: 11px;
+      color: #444;
+      user-select: none;
+    }
+    #mobile-nav span { cursor: pointer; transition: color 0.2s; }
+    #mobile-nav span:active { color: #888; }
+    @media (max-width: 720px) { #mobile-nav { display: flex; } }
 
     #enter-hint {
       margin-top: 0.7em;
@@ -113,6 +129,7 @@
   <pre id="stage"></pre>
   <div id="offerings"></div>
   <div id="enter-hint"></div>
+  <div id="mobile-nav"><span id="mnav-prev"></span><span id="mnav-next"></span></div>
   <div id="contact-screen"></div>
 
   <script>
@@ -370,9 +387,10 @@
 
     // ── Sizing ────────────────────────────────────────────────────────────────
     function setSize() {
-      const byW = (window.innerWidth  * 0.41) / (COLS * 0.62);
-      const byH = (window.innerHeight * 0.34) / (ROWS * 1.3);
-      const fs  = Math.max(4, Math.floor(Math.min(byW, byH)));
+      const mobile = window.innerWidth <= 720;
+      const byW    = (window.innerWidth  * (mobile ? 0.99 : 0.41)) / (COLS * 0.62);
+      const byH    = (window.innerHeight * (mobile ? 0.56 : 0.34)) / (ROWS * 1.3);
+      const fs     = Math.max(mobile ? 1 : 4, Math.floor(Math.min(byW, byH)));
       stage.style.fontSize = fs + 'px';
     }
 
@@ -422,6 +440,10 @@
       offeringsEl.querySelectorAll('.box').forEach((b, i) =>
         b.classList.toggle('selected', i === idx)
       );
+      const prev = OFFERINGS[(idx + 2) % 3].title;
+      const next = OFFERINGS[(idx + 1) % 3].title;
+      document.getElementById('mnav-prev').textContent = `← ${prev}`;
+      document.getElementById('mnav-next').textContent = `${next} →`;
     }
 
     // Scrambles textContent of an element to/from noise chars matching the beam flash
@@ -518,6 +540,11 @@
       });
       offeringsEl.appendChild(boxEl);
     });
+
+    // Mobile nav tap
+    document.getElementById('mnav-prev').addEventListener('click', () => selectBox((selectedIdx + 2) % 3));
+    document.getElementById('mnav-next').addEventListener('click', () => selectBox((selectedIdx + 1) % 3));
+    selectBox(1); // initialise nav labels (Capital default)
 
     document.addEventListener('keydown', e => {
       if (formOpen) { if (e.key === 'Escape') closeForm(); return; }
